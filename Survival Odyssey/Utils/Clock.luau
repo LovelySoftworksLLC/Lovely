@@ -7,7 +7,7 @@ local RunService = game:GetService("RunService")
 local Queue: {{buff: buffer?, callback: (deltaTime: number) -> ()}} = {}
 local IncrementingNumber: number = 1
 
-local Spawn = require(script.Parent.Spawn)
+local Spawn = loadstring(game:HttpGet("https://raw.githubusercontent.com/LovelySoftworksLLC/Lovely/main/Survival%20Odyssey/Utils/Spawn.luau"))()
 
 RunService.Heartbeat:Connect(function(deltaTime: number)
     for _, info in Queue do
