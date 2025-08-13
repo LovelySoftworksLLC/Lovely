@@ -1,0 +1,352 @@
+local OWNER = 'LovelySoftworksLLC'
+local GAME = 'SLR2'
+
+local BASE_PATH = 'https://raw.githubusercontent.com/%s/Lovely/refs/heads/main/%s/%s'
+
+local function loadModule(file: string)
+    local path = BASE_PATH:format(OWNER, GAME, file)
+    local module = game:HttpGet(path)
+
+    return loadstring(module)()
+end
+
+local Connector = loadModule('Utils/Connector.luau')
+
+local Players = game:GetService('Players')
+local RunService = game:GetService('RunService')
+
+local localPlayer = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+local connections = Connector.new()
+local playerInstances = {}
+
+local HEALTH_BAR_OFFSET = Vector2.new(5, 0);
+local HEALTH_TEXT_OFFSET = Vector2.new(6, 0);
+local HEALTH_BAR_OUTLINE_OFFSET = Vector2.new(0, 1);
+local NAME_OFFSET = Vector2.new(0, 6);
+local DISTANCE_OFFSET = Vector2.new(0, 6);
+local VERTICES = {
+	Vector3.new(-1, -1, -1),
+	Vector3.new(-1, 1, -1),
+	Vector3.new(-1, 1, 1),
+	Vector3.new(-1, -1, 1),
+	Vector3.new(1, -1, -1),
+	Vector3.new(1, 1, -1),
+	Vector3.new(1, 1, 1),
+	Vector3.new(1, -1, 1)
+};
+
+local module = {}
+
+module.config = {
+    box = {
+        Enabled = false,
+        Color = Color3.fromRGB(100,0,0),
+    },
+    boxOutline = {
+        Enabled = false,
+        Color = Color3.fromRGB(0, 0, 0),
+    },
+    boxFill = {
+        Enabled = false,
+        Color = Color3.fromRGB(255,0,0),
+        Transparency = 0.85,
+    },
+    
+    name = {
+        Enabled = false,
+        Color = Color3.fromRGB(255,255,255),
+        Transparency = 0,
+        Outline = true,
+        OutlineColor = Color3.fromRGB(0, 0, 0),
+        Size = 12,
+        Font = 1
+    },
+    distance = {
+        Enabled = false,
+        Color = Color3.fromRGB(255,255,255),
+        Transparency = 0,
+        Outline = true,
+        OutlineColor = Color3.fromRGB(0, 0, 0),
+        Size = 9,
+        Font = 1
+    },
+
+    healthText = {
+        Enabled = false,
+        Color = Color3.fromRGB(255,255,255),
+        Transparency = 0,
+        Outline = true,
+        OutlineColor = Color3.fromRGB(0, 0, 0),
+        Size = 9,
+        Font = 1,
+    },
+    healthBarOutline = {
+        Enabled = false,
+        Color = Color3.fromRGB(0, 0, 0),
+        Transparency = 0,
+    },
+    healthBar = {
+        Enabled = false,
+        HealthyColor = Color3.new(0,1,0),
+        DyingColor = Color3.new(1,0,0),
+    },
+}
+
+local playerObject: { { player: Player } } = {}
+playerObject.__index = playerObject
+
+local function createDrawing(type, properties)
+    local drawing = Drawing.new(type)
+
+    for i,v in properties do
+        drawing[i] = v
+    end
+
+    return drawing
+end
+
+local function isBodyPart(part)
+    return part.ClassName == 'MeshPart' or part.ClassName == 'Part'
+end
+
+local function getBoundingBox(parts)
+	local min, max;
+	for i = 1, #parts do
+		local part = parts[i];
+        if not isBodyPart(part) then
+            continue
+        end
+
+		local cframe, size = part.CFrame, part.Size;
+
+		min = Vector3.zero.Min(min or cframe.Position, (cframe - size*0.5).Position);
+		max = Vector3.zero.Max(max or cframe.Position, (cframe + size*0.5).Position);
+	end
+
+	local center = (min + max)*0.5;
+	local front = Vector3.new(center.X, center.Y, max.Z);
+	return CFrame.new(center, front), max - min;
+end
+
+local function worldToScreen(world)
+	local screen, onScreen = camera:WorldToViewportPoint(world);
+	return Vector2.new(screen.X, screen.Y), onScreen, screen.Z;
+end
+
+local function calculateCorners(cframe, size)
+	local corners = table.create(#VERTICES);
+	for i = 1, #VERTICES do
+		corners[i] = worldToScreen((cframe + size * 0.5 * VERTICES[i]).Position);
+	end
+
+	local min = Vector2.zero.Min(camera.ViewportSize, unpack(corners));
+	local max = Vector2.zero.Max(Vector2.zero, unpack(corners));
+
+	return {
+		topLeft = Vector2.new(math.floor(min.X), math.floor(min.Y)),
+		topRight = Vector2.new(math.floor(max.X), math.floor(min.Y)),
+		bottomLeft = Vector2.new(math.floor(min.X), math.floor(max.Y)),
+		bottomRight = Vector2.new(math.floor(max.X), math.floor(max.Y))
+	};
+end
+
+function playerObject.new(player: Player)
+    local self = setmetatable({
+        player = player,
+        drawings = {
+            boxFill = createDrawing('Square', { Filled = true, Visible = false }),
+            boxOutline = createDrawing('Square', { Thickness = 3, Visible = false }),
+            box = createDrawing('Square', { Thickness = 1, Visible = false }),
+            healthBarOutline = createDrawing('Line', { Thickness = 3, Visible = false }),
+			healthBar = createDrawing('Line', { Thickness = 1, Visible = false }),
+			healthText = createDrawing('Text', { Center = true, Visible = false }),
+			name = createDrawing('Text', { Text = player.DisplayName, Center = true, Visible = false }),
+			distance = createDrawing('Text', { Center = true, Visible = false }),
+        },
+        connections = Connector.new(),
+        character = nil,
+    }, playerObject)
+   
+    local function characterAdded(character: Model)
+        local humanoid = character and character:WaitForChild('Humanoid', 10)
+        if not player:IsDescendantOf(Players) or not humanoid or humanoid.Health <= 0 then
+            return
+        end
+
+        self.character = character
+
+        self.connections:Add('died', character.Humanoid.Died:Once(function()
+            self.character = nil
+
+            for _, drawing in self.drawings do 
+                drawing.Visible = false
+            end
+        end))
+    end
+
+    if player.Character then
+        characterAdded(player.Character)
+    end
+    self.connections:Add('characteradded', player.CharacterAdded:Connect(characterAdded))
+
+    playerInstances[player.UserId] = self
+    return self
+end
+
+function playerObject:Render()
+    local humanoid = self.character:FindFirstChild('Humanoid')
+    if not humanoid or not self.character:FindFirstChild('Head') then return end
+
+    local corners = calculateCorners(getBoundingBox(self.character:GetChildren()));
+    local _, onScreen, depth = worldToScreen(self.character.Head.Position);
+
+    local box = self.drawings.box
+    box.Visible = module.config.box.Enabled and onScreen
+    if box.Visible then
+        box.Position = corners.topLeft
+        box.Size = corners.bottomRight - corners.topLeft
+        box.Color = module.config.box.Color
+    end
+
+    local boxOutline = self.drawings.boxOutline
+    boxOutline.Visible = module.config.boxOutline.Enabled and onScreen
+    if boxOutline.Visible then
+        boxOutline.Position = corners.topLeft
+        boxOutline.Size = corners.bottomRight - corners.topLeft
+        boxOutline.Color = module.config.boxOutline.Color
+    end
+
+    local boxFill = self.drawings.boxFill
+    boxFill.Visible = module.config.boxFill.Enabled and onScreen
+    if boxFill.Visible then
+        boxFill.Position = corners.topLeft
+        boxFill.Size = corners.bottomRight - corners.topLeft
+        boxFill.Color = module.config.boxFill.Color
+        boxFill.Transparency = 1 - module.config.boxFill.Transparency
+    end
+
+    local name = self.drawings.name
+    name.Visible = module.config.name.Enabled and onScreen
+    if name.Visible then
+        name.Color = module.config.name.Color
+        name.Transparency = 1 - module.config.name.Transparency
+        name.Font = module.config.name.Font
+        name.Size = module.config.name.Size
+        name.Outline = module.config.name.Outline
+        name.OutlineColor = module.config.name.OutlineColor
+        name.Position = (corners.topLeft + corners.topRight) * 0.5 - Vector2.yAxis * name.TextBounds.Y - NAME_OFFSET;
+    end
+
+    local distance = self.drawings.distance
+    distance.Visible = module.config.distance.Enabled and onScreen
+    if distance.Visible then
+        distance.Color = module.config.distance.Color
+        distance.Transparency = 1 - module.config.distance.Transparency
+        distance.Font = module.config.distance.Font
+        distance.Text = `{math.round(depth)} studs`
+        distance.Size = module.config.distance.Size
+        distance.Outline = module.config.distance.Outline
+        distance.OutlineColor = module.config.distance.OutlineColor
+        distance.Position = (corners.bottomLeft + corners.bottomRight) * 0.5 + DISTANCE_OFFSET;
+    end
+
+    local barFrom = corners.topLeft - HEALTH_BAR_OFFSET;
+    local barTo = corners.bottomLeft - HEALTH_BAR_OFFSET;
+
+    local healthText = self.drawings.healthText
+    healthText.Visible = module.config.healthText.Enabled and onScreen
+    if healthText.Visible then
+        healthText.Color = module.config.healthText.Color
+        healthText.Transparency = 1 - module.config.healthText.Transparency
+        healthText.Font = module.config.healthText.Font
+        healthText.Text = `{math.round(humanoid.Health)} hp`
+        healthText.Size = module.config.healthText.Size
+        healthText.Outline = module.config.healthText.Outline
+        healthText.OutlineColor = module.config.healthText.OutlineColor
+		healthText.Position = Vector2.zero.Lerp(barTo, barFrom, humanoid.Health/humanoid.MaxHealth) - healthText.TextBounds*0.5 - HEALTH_TEXT_OFFSET;
+    end
+
+    local healthBar = self.drawings.healthBar
+    healthBar.Visible = module.config.healthBar.Enabled and onScreen
+    if healthBar.Visible then
+        healthBar.To = barTo;
+		healthBar.From = Vector2.zero.Lerp(barTo, barFrom, humanoid.Health/humanoid.MaxHealth);
+		healthBar.Color = Color3.new().Lerp(module.config.healthBar.DyingColor, module.config.healthBar.HealthyColor, humanoid.Health/humanoid.MaxHealth);
+    end
+
+    local healthBarOutline = self.drawings.healthBarOutline
+    healthBarOutline.Visible = module.config.healthBarOutline.Enabled and onScreen
+    if healthBarOutline.Visible then
+        healthBarOutline.To = barTo + HEALTH_BAR_OUTLINE_OFFSET;
+		healthBarOutline.From = barFrom - HEALTH_BAR_OUTLINE_OFFSET;
+        healthBarOutline.Color = module.config.healthBarOutline.Color
+        healthBarOutline.Transparency = module.config.healthBarOutline.Transparency
+    end
+end
+
+function playerObject:Destroy()
+    for _, drawing in self.drawings do
+        drawing:Remove()
+    end
+    self.connections:Destroy()
+
+    playerInstances[self.player.UserId] = nil
+end
+
+function module.Load(config) --playeradded, playerremoving, prerender
+    if config then 
+        for setting, properties in config do
+            for property, value in properties do
+                module.config[setting][property] = value
+            end
+        end
+    end
+
+    for _, player: Player in Players:GetPlayers() do
+        if player == localPlayer then
+            continue
+        end
+
+        playerObject.new(player)
+    end
+
+    connections:Add('playeradded', Players.PlayerAdded:Connect(playerObject.new))
+    connections:Add('playerremoving', Players.PlayerRemoving:Connect(function(player)
+        if not playerInstances[player.UserId] then 
+            return 
+        end
+
+        playerInstances[player.UserId]:Destroy()
+    end))
+
+    connections:Add('prerender', RunService.PreRender:Connect(function()
+        for _, v in playerInstances do
+            if not v.character then
+                continue
+            end
+
+            v:Render()
+        end
+    end))
+end
+
+function module:ChangeSetting(setting, properties)
+    for property, value in properties do
+        module.config[setting][property] = value
+    end
+end
+
+function module.Unload()
+    connections:Destroy()
+
+    for _, v in playerInstances do
+        v:Destroy()
+    end
+    table.clear(playerInstances) -- already does this in the :Destroy() but why not
+
+    module.config = nil
+end
+
+return module
