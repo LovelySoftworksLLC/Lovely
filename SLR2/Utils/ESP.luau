@@ -297,9 +297,17 @@ end
 
 function module.Load(config) --playeradded, playerremoving, prerender
     if config then 
-        for setting, properties in config do
-            for property, value in properties do
-                module.config[setting][property] = value
+        for setting, properties in module.config do
+            if not config[setting] then
+                continue 
+            end
+
+            for property in properties do
+                local lower = property:lower()
+
+                if config[setting][lower] then
+                    module.config[setting][property] = config[setting][lower]
+                end
             end
         end
     end
