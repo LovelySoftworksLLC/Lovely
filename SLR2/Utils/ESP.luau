@@ -80,7 +80,7 @@ module.config = {
         Outline = true,
         OutlineColor = Color3.fromRGB(0, 0, 0),
         Size = 9,
-        Font = 1,,
+        Font = 1,
     },
     healthBarOutline = {
         Enabled = false,
