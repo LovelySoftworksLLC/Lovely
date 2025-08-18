@@ -197,10 +197,24 @@ end
 
 function playerObject:Render()
     local humanoid = self.character:FindFirstChild('Humanoid')
-    if not humanoid or not self.character:FindFirstChild('Head') then return end
+    local head = self.character and self.character:FindFirstChild("Head")
+
+    if not humanoid or not head then
+        for _, drawing in self.drawings do
+            drawing.Visible = false
+        end
+        return
+    end
 
     local corners = calculateCorners(getBoundingBox(self.character:GetChildren()));
-    local _, onScreen, depth = worldToScreen(self.character.Head.Position);
+    local _, onScreen, depth = worldToScreen(head.Position);
+
+    if not onScreen then
+        for _, drawing in self.drawings do
+            drawing.Visible = false
+        end
+        return
+    end
 
     local box = self.drawings.box
     box.Visible = module.config.box.Enabled and onScreen
