@@ -61,7 +61,7 @@ module.config = {
         Outline = true,
         OutlineColor = Color3.fromRGB(0, 0, 0),
         Size = 12,
-        Font = 3
+        Font = 1,
     },
     distance = {
         Enabled = false,
@@ -70,7 +70,7 @@ module.config = {
         Outline = true,
         OutlineColor = Color3.fromRGB(0, 0, 0),
         Size = 9,
-        Font = 3
+        Font = 1,
     },
 
     healthText = {
@@ -80,7 +80,7 @@ module.config = {
         Outline = true,
         OutlineColor = Color3.fromRGB(0, 0, 0),
         Size = 9,
-        Font = 3,
+        Font = 1,,
     },
     healthBarOutline = {
         Enabled = false,
