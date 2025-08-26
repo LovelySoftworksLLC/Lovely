@@ -266,8 +266,8 @@ function playerObject:Render()
         distance.Position = (corners.bottomLeft + corners.bottomRight) * 0.5 + DISTANCE_OFFSET;
     end
 
-    local barFrom = corners.topLeft - Vector2.new(box.Size.X / 2, 0) - HEALTH_BAR_OFFSET
-    local barTo = corners.bottomLeft - Vector2.new(box.Size.X / 2, 0) - HEALTH_BAR_OFFSET;
+    local barFrom = corners.topLeft - HEALTH_BAR_OFFSET
+    local barTo = corners.bottomLeft - HEALTH_BAR_OFFSET;
 
     local healthText = self.drawings.healthText
     healthText.Visible = module.config.healthText.Enabled and onScreen
