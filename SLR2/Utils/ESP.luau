@@ -157,7 +157,7 @@ function playerObject.new(player: Player)
         player = player,
         drawings = {
             boxFill = createDrawing('Square', { Filled = true, Visible = false }),
-            boxOutline = createDrawing('Square', { Thickness = 3, Visible = false }),
+            boxOutline = createDrawing('Square', { Thickness = 2, Visible = false }),
             box = createDrawing('Square', { Thickness = 1, Visible = false }),
             healthBarOutline = createDrawing('Line', { Thickness = 3, Visible = false }),
 			healthBar = createDrawing('Line', { Thickness = 1, Visible = false }),
@@ -266,8 +266,8 @@ function playerObject:Render()
         distance.Position = (corners.bottomLeft + corners.bottomRight) * 0.5 + DISTANCE_OFFSET;
     end
 
-    local barFrom = corners.topLeft - HEALTH_BAR_OFFSET;
-    local barTo = corners.bottomLeft - HEALTH_BAR_OFFSET;
+    local barFrom = corners.topLeft - box.Size.Y / 2 - HEALTH_BAR_OFFSET
+    local barTo = corners.bottomLeft - box.Size.Y / 2 - HEALTH_BAR_OFFSET;
 
     local healthText = self.drawings.healthText
     healthText.Visible = module.config.healthText.Enabled and onScreen
