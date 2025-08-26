@@ -21,8 +21,8 @@ local camera = workspace.CurrentCamera
 local connections = Connector.new()
 local playerInstances = {}
 
-local HEALTH_BAR_OFFSET = Vector2.new(5, 0);
-local HEALTH_TEXT_OFFSET = Vector2.new(6, 0);
+local HEALTH_BAR_OFFSET = Vector2.new(6, 0);
+local HEALTH_TEXT_OFFSET = Vector2.new(7, 0);
 local HEALTH_BAR_OUTLINE_OFFSET = Vector2.new(0, 1);
 local NAME_OFFSET = Vector2.new(0, 6);
 local DISTANCE_OFFSET = Vector2.new(0, 6);
