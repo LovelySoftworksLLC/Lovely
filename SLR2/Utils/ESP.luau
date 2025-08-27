@@ -245,20 +245,19 @@ function playerObject:Render()
         return
     end
 
-    local cornerVisible = module.config.corners.Enabled and onScreen 
     for corner, obj in self.drawings.corners do
         local corner, direction = table.unpack(string.split(corner, '_'))
 
         local boxSize = corners.bottomRight - corners.topLeft
         local cornerSize = direction == "vertical" and boxSize * Vector2.new(0.2, 0) or direction == "horizontal" and boxSize * Vector2.new(0, 0.2)
 
-        obj.Visible = cornerVisible
+        obj.Visible = module.config.corners.Enabled 
         obj.To = corners[corner] - cornerSize
         obj.From = corners[corner]
     end
 
     local box = self.drawings.box
-    box.Visible = module.config.box.Enabled and onScreen
+    box.Visible = module.config.box.Enabled
     if box.Visible then
         box.Position = corners.topLeft
         box.Size = corners.bottomRight - corners.topLeft
@@ -266,7 +265,7 @@ function playerObject:Render()
     end
 
     local boxOutline = self.drawings.boxOutline
-    boxOutline.Visible = module.config.boxOutline.Enabled and onScreen
+    boxOutline.Visible = module.config.boxOutline.Enabled
     if boxOutline.Visible then
         boxOutline.Position = corners.topLeft
         boxOutline.Size = corners.bottomRight - corners.topLeft
@@ -274,7 +273,7 @@ function playerObject:Render()
     end
 
     local boxFill = self.drawings.boxFill
-    boxFill.Visible = module.config.boxFill.Enabled and onScreen
+    boxFill.Visible = module.config.boxFill.Enabled
     if boxFill.Visible then
         boxFill.Position = corners.topLeft
         boxFill.Size = corners.bottomRight - corners.topLeft
@@ -283,7 +282,7 @@ function playerObject:Render()
     end
 
     local name = self.drawings.name
-    name.Visible = module.config.name.Enabled and onScreen
+    name.Visible = module.config.name.Enabled
     if name.Visible then
         name.Color = module.config.name.Color
         name.Transparency = 1 - module.config.name.Transparency
@@ -295,7 +294,7 @@ function playerObject:Render()
     end
 
     local distance = self.drawings.distance
-    distance.Visible = module.config.distance.Enabled and onScreen
+    distance.Visible = module.config.distance.Enabled
     if distance.Visible then
         distance.Color = module.config.distance.Color
         distance.Transparency = 1 - module.config.distance.Transparency
@@ -311,7 +310,7 @@ function playerObject:Render()
     local barTo = corners.bottomLeft - HEALTH_BAR_OFFSET;
 
     local healthText = self.drawings.healthText
-    healthText.Visible = module.config.healthText.Enabled and onScreen
+    healthText.Visible = module.config.healthText.Enabled
     if healthText.Visible then
         healthText.Color = module.config.healthText.Color
         healthText.Transparency = 1 - module.config.healthText.Transparency
@@ -324,7 +323,7 @@ function playerObject:Render()
     end
 
     local healthBar = self.drawings.healthBar
-    healthBar.Visible = module.config.healthBar.Enabled and onScreen
+    healthBar.Visible = module.config.healthBar.Enabled 
     if healthBar.Visible then
         healthBar.To = barTo;
 		healthBar.From = Vector2.zero.Lerp(barTo, barFrom, humanoid.Health/humanoid.MaxHealth);
@@ -332,7 +331,7 @@ function playerObject:Render()
     end
 
     local healthBarOutline = self.drawings.healthBarOutline
-    healthBarOutline.Visible = module.config.healthBarOutline.Enabled and onScreen
+    healthBarOutline.Visible = module.config.healthBarOutline.Enabled 
     if healthBarOutline.Visible then
         healthBarOutline.To = barTo + HEALTH_BAR_OUTLINE_OFFSET;
 		healthBarOutline.From = barFrom - HEALTH_BAR_OUTLINE_OFFSET;
