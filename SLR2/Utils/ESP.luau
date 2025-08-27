@@ -197,15 +197,7 @@ function playerObject.new(player: Player)
         self.connections:Add('died', character.Humanoid.Died:Once(function()
             self.character = nil
 
-            for i, drawing in self.drawings do 
-                if i:find('corners') then
-                    for _,v in drawing do
-                        drawing.Visible = false 
-                    end
-                else
-                    drawing.Visible = false
-                end
-            end
+            return self:HideDrawings()
         end))
     end
 
@@ -218,37 +210,31 @@ function playerObject.new(player: Player)
     return self
 end
 
+function playerObject:HideDrawings()
+    for _, drawing in self.drawings do
+        if #drawing ~= 0 then -- it isn't a drawing / is a table
+            for _,v in drawing do
+                v.Visible = false 
+            end
+        else
+            drawing.Visible = false
+        end
+    end
+end
+
 function playerObject:Render()
     local humanoid = self.character:FindFirstChild('Humanoid')
     local head = self.character and self.character:FindFirstChild("Head")
 
     if not humanoid or not head then
-        for i, drawing in self.drawings do
-            if i:find('corners') then
-                for _,v in drawing do
-                    v.Visible = false 
-                end
-            else
-                drawing.Visible = false
-            end
-        end
-        return
+        return self:HideDrawings()
     end
 
     local corners = calculateCorners(getBoundingBox(self.character:GetChildren()));
     local _, onScreen, depth = worldToScreen(head.Position);
 
     if not onScreen then
-        for i, drawing in self.drawings do
-            if i:find('corners') then
-                for _,v in drawing do
-                    v.Visible = false 
-                end
-            else
-                drawing.Visible = false
-            end
-        end
-        return
+        return self:HideDrawings()
     end
 
     for i, v in { self.drawings.corners, self.drawings.cornersOutline } do
@@ -353,8 +339,8 @@ function playerObject:Render()
 end
 
 function playerObject:Destroy()
-    for i, drawing in self.drawings do
-        if i:find('corners') then
+    for _, drawing in self.drawings do
+        if #drawing ~= 0 then -- it isn't a drawing / is a table
             for _,v in drawing do
                 v:Remove()
             end
@@ -362,8 +348,8 @@ function playerObject:Destroy()
             drawing:Remove()
         end
     end
-    self.connections:Destroy()
 
+    self.connections:Destroy()
     playerInstances[self.player.UserId] = nil
 end
 
