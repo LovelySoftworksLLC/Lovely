@@ -92,6 +92,15 @@ module.config = {
         HealthyColor = Color3.new(0,1,0),
         DyingColor = Color3.new(1,0,0),
     },
+
+    corners = {
+        Enabled = true, 
+        Color = Color3.fromRGB(255, 255, 255),
+    },
+    cornersOutline = {
+        Enabled = true, 
+        Color = Color3.fromRGB(0, 0, 0),
+    },
 }
 
 local playerObject: { { player: Player } } = {}
@@ -164,11 +173,19 @@ function playerObject.new(player: Player)
 			healthText = createDrawing('Text', { Center = true, Visible = false }),
 			name = createDrawing('Text', { Text = player.DisplayName, Center = true, Visible = false }),
 			distance = createDrawing('Text', { Center = true, Visible = false }),
+
+            corners = {},
+            cornersOutline = {},
         },
         connections = Connector.new(),
         character = nil,
     }, playerObject)
    
+    for _, v in {"topLeft", "topRight", "bottomLeft", "bottomRight"} do
+        self.corners[v..'_vertical'], self.corners[v..'_horizontal'] = createDrawing('Line', { Thickness = 1, Visible = false }), createDrawing('Line', { Thickness = 1, Visible = false })
+        self.cornersOutline[v..'_vertical'], self.cornersOutline[v..'_horizontal'] = createDrawing('Line', { Thickness = 2, Visible = false }), createDrawing('Line', { Thickness = 2, Visible = false })
+    end 
+
     local function characterAdded(character: Model)
         local humanoid = character and character:WaitForChild('Humanoid', 10)
         if not player:IsDescendantOf(Players) or not humanoid or humanoid.Health <= 0 then
@@ -214,6 +231,18 @@ function playerObject:Render()
             drawing.Visible = false
         end
         return
+    end
+
+    local cornerVisible = module.config.corners.Enabled and onScreen 
+    for _, corner in self.drawings.corners do
+        local corner, direction = string.split(corner)
+
+        local boxSize = corners.bottomRight - corners.topLeft
+        local cornerSize = direction == "vertical" and boxSize * Vector2.new(0.2, 0) or direction == "horizontal" and boxSize.Y * Vector2.new(0, 0.2)
+
+        corner.Visible = cornerVisible
+        corner.To = corners[corner] - cornerSize
+        corner.From = corners[corner]
     end
 
     local box = self.drawings.box
