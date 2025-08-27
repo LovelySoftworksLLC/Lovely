@@ -237,7 +237,7 @@ function playerObject:Render()
         return self:HideDrawings()
     end
 
-    for i, v in ipairs { self.drawings.corners, self.drawings.cornersOutline } do
+    for i, v in { self.drawings.corners, self.drawings.cornersOutline } do
         for corner, obj in v do 
             local corner, direction = table.unpack(string.split(corner, '_'))
             local boxSize = corners.bottomRight - corners.topLeft
