@@ -247,8 +247,8 @@ function playerObject:Render()
 
             local offset = direction == "vertical" and Vector2.new(0, boxSize.Y * 0.2 * vertMul) or Vector2.new(boxSize.X * 0.2 * horizMul, 0)
             
-            obj.Visible = i == "corners" and module.config.corners.Enabled or module.config.cornersOutline.Enabled
-            obj.Color = i == "corners" and module.config.corners.Color or module.config.cornersOutline.Color
+            obj.Visible = i == 1 and module.config.corners.Enabled or module.config.cornersOutline.Enabled
+            obj.Color = i == 1 and module.config.corners.Color or module.config.cornersOutline.Color
             obj.To = corners[corner] + offset
             obj.From = corners[corner]
         end 
