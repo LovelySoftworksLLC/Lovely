@@ -197,7 +197,7 @@ function playerObject.new(player: Player)
         self.connections:Add('died', character.Humanoid.Died:Once(function()
             self.character = nil
 
-            return self:HideDrawings()
+            self:HideDrawings()
         end))
     end
 
@@ -238,7 +238,9 @@ function playerObject:Render()
     end
 
     for i, v in { self.drawings.corners, self.drawings.cornersOutline } do
+        print(i, v)
         for corner, obj in v do 
+            print(corner, obj)
             local corner, direction = table.unpack(string.split(corner, '_'))
             local boxSize = corners.bottomRight - corners.topLeft
             
