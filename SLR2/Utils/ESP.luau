@@ -182,8 +182,8 @@ function playerObject.new(player: Player)
     }, playerObject)
    
     for _, v in {"topLeft", "topRight", "bottomLeft", "bottomRight"} do
-        self.corners[v..'_vertical'], self.corners[v..'_horizontal'] = createDrawing('Line', { Thickness = 1, Visible = false }), createDrawing('Line', { Thickness = 1, Visible = false })
-        self.cornersOutline[v..'_vertical'], self.cornersOutline[v..'_horizontal'] = createDrawing('Line', { Thickness = 2, Visible = false }), createDrawing('Line', { Thickness = 2, Visible = false })
+        self.drawings.corners[v..'_vertical'], self.drawings.corners[v..'_horizontal'] = createDrawing('Line', { Thickness = 1, Visible = false }), createDrawing('Line', { Thickness = 1, Visible = false })
+        self.drawings.cornersOutline[v..'_vertical'], self.drawings.cornersOutline[v..'_horizontal'] = createDrawing('Line', { Thickness = 2, Visible = false }), createDrawing('Line', { Thickness = 2, Visible = false })
     end 
 
     local function characterAdded(character: Model)
@@ -218,7 +218,13 @@ function playerObject:Render()
 
     if not humanoid or not head then
         for _, drawing in self.drawings do
-            drawing.Visible = false
+            if type(drawing) == 'table' then
+                for _,v in drawing do
+                    v.Visible = false 
+                end
+            else
+                drawing.Visible = false
+            end
         end
         return
     end
@@ -228,7 +234,13 @@ function playerObject:Render()
 
     if not onScreen then
         for _, drawing in self.drawings do
-            drawing.Visible = false
+            if type(drawing) == 'table' then
+                for _,v in drawing do
+                    v.Visible = false 
+                end
+            else
+                drawing.Visible = false
+            end
         end
         return
     end
@@ -331,7 +343,13 @@ end
 
 function playerObject:Destroy()
     for _, drawing in self.drawings do
-        drawing:Remove()
+        if type(drawing) == 'table' then
+            for _,v in drawing do
+                drawing:Remove()
+            end
+        else
+            drawing:Remove()
+        end
     end
     self.connections:Destroy()
 
