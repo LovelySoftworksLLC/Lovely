@@ -253,12 +253,17 @@ function playerObject:Render()
 
     for corner, obj in self.drawings.corners do
         local corner, direction = table.unpack(string.split(corner, '_'))
-
         local boxSize = corners.bottomRight - corners.topLeft
-        local cornerSize = direction == "vertical" and boxSize * Vector2.new(0.2, 0) or direction == "horizontal" and boxSize * Vector2.new(0, 0.2)
+        
+        local vertMul  = string.find(corner, "Top") and -1 or 1
+        local horizMul = string.find(corner, "Right") and -1 or 1
 
+        local offset = direction == "vertical"
+            and Vector2.new(0, boxSize.Y * 0.2 * vertMul)
+            or Vector2.new(boxSize.X * 0.2 * horizMul, 0)
+        
         obj.Visible = module.config.corners.Enabled 
-        obj.To = corners[corner] - cornerSize
+        obj.To = corners[corner] + offset
         obj.From = corners[corner]
     end
 
