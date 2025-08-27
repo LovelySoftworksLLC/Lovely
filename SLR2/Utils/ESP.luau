@@ -217,8 +217,8 @@ function playerObject:Render()
     local head = self.character and self.character:FindFirstChild("Head")
 
     if not humanoid or not head then
-        for _, drawing in self.drawings do
-            if type(drawing) == 'table' then
+        for i, drawing in self.drawings do
+            if i:find('corners') then
                 for _,v in drawing do
                     v.Visible = false 
                 end
@@ -233,8 +233,8 @@ function playerObject:Render()
     local _, onScreen, depth = worldToScreen(head.Position);
 
     if not onScreen then
-        for _, drawing in self.drawings do
-            if type(drawing) == 'table' then
+        for i, drawing in self.drawings do
+            if i:find('corners') then
                 for _,v in drawing do
                     v.Visible = false 
                 end
@@ -342,8 +342,8 @@ function playerObject:Render()
 end
 
 function playerObject:Destroy()
-    for _, drawing in self.drawings do
-        if type(drawing) == 'table' then
+    for i, drawing in self.drawings do
+        if i:find('corners') then
             for _,v in drawing do
                 drawing:Remove()
             end
