@@ -197,8 +197,14 @@ function playerObject.new(player: Player)
         self.connections:Add('died', character.Humanoid.Died:Once(function()
             self.character = nil
 
-            for _, drawing in self.drawings do 
-                drawing.Visible = false
+            for i, drawing in self.drawings do 
+                if i:find('corners') then
+                    for _,v in drawing do
+                        drawing.Visible = false 
+                    end
+                else
+                    drawing.Visible = false
+                end
             end
         end))
     end
