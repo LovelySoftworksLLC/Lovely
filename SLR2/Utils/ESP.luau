@@ -247,7 +247,7 @@ function playerObject:Render()
 
     local cornerVisible = module.config.corners.Enabled and onScreen 
     for corner, obj in self.drawings.corners do
-        local corner, direction = string.split(corner, '_')
+        local corner, direction = table.unpack(string.split(corner, '_'))
 
         local boxSize = corners.bottomRight - corners.topLeft
         local cornerSize = direction == "vertical" and boxSize * Vector2.new(0.2, 0) or direction == "horizontal" and boxSize.Y * Vector2.new(0, 0.2)
