@@ -340,7 +340,7 @@ end
 
 function playerObject:Destroy()
     for _, drawing in self.drawings do
-        if #drawing ~= 0 then -- it isn't a drawing / is a table
+        if tostring(drawing) ~= "Drawing" then -- it isn't a drawing / is a table
             for _,v in drawing do
                 v:Remove()
             end
