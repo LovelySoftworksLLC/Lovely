@@ -255,7 +255,7 @@ function playerObject:Render()
         local corner, direction = table.unpack(string.split(corner, '_'))
         local boxSize = corners.bottomRight - corners.topLeft
         
-        local vertMul  = string.find(corner:lower(), "top") and 1 or (string.find(corner:lower(), "bottom") and -1)
+        local vertMul  = string.find(corner:lower(), "top") and -1 or (string.find(corner:lower(), "bottom") and 1)
         local horizMul = string.find(corner:lower(), "left") and -1 or (string.find(corner:lower(), "right") and 1)
 
         local offset = direction == "vertical"
