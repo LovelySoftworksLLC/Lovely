@@ -345,7 +345,7 @@ function playerObject:Destroy()
     for i, drawing in self.drawings do
         if i:find('corners') then
             for _,v in drawing do
-                drawing:Remove()
+                v:Remove()
             end
         else
             drawing:Remove()
