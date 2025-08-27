@@ -167,7 +167,7 @@ function playerObject.new(player: Player)
         drawings = {
             boxFill = createDrawing('Square', { Filled = true, Visible = false }),
             boxOutline = createDrawing('Square', { Thickness = 2, Visible = false }),
-            box = createDrawing('Square', { Thickness = 1, Visible = false }),
+            box = createDrawing('Square', { Thickness = 1, Visible = false, ZIndex = 2, }),
             healthBarOutline = createDrawing('Line', { Thickness = 3, Visible = false }),
 			healthBar = createDrawing('Line', { Thickness = 1, Visible = false }),
 			healthText = createDrawing('Text', { Center = true, Visible = false }),
@@ -183,7 +183,7 @@ function playerObject.new(player: Player)
    
     for _, v in {"topLeft", "topRight", "bottomLeft", "bottomRight"} do
         self.drawings.cornersOutline[v..'_vertical'], self.drawings.cornersOutline[v..'_horizontal'] = createDrawing('Line', { Thickness = 2, Visible = false }), createDrawing('Line', { Thickness = 2, Visible = false })
-        self.drawings.corners[v..'_vertical'], self.drawings.corners[v..'_horizontal'] = createDrawing('Line', { Thickness = 1, Visible = false }), createDrawing('Line', { Thickness = 1, Visible = false })
+        self.drawings.corners[v..'_vertical'], self.drawings.corners[v..'_horizontal'] = createDrawing('Line', { Thickness = 1, Visible = false }), createDrawing('Line', { Thickness = 1, Visible = false, ZIndex = 2, })
     end 
 
     local function characterAdded(character: Model)
@@ -212,7 +212,7 @@ end
 
 function playerObject:HideDrawings()
     for _, drawing in self.drawings do
-        if tostring(drawing) ~= "Drawing" then -- it isn't a drawing / is a table
+        if isrenderobj(drawing) then -- it isn't a drawing / is a table
             for i,v in drawing do
                 v.Visible = false 
             end
@@ -340,7 +340,7 @@ end
 
 function playerObject:Destroy()
     for _, drawing in self.drawings do
-        if tostring(drawing) ~= "Drawing" then -- it isn't a drawing / is a table
+        if isrenderobj(drawing) then -- it isn't a drawing / is a table
             for _,v in drawing do
                 v:Remove()
             end
