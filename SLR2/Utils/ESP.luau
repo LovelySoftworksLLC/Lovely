@@ -94,11 +94,11 @@ module.config = {
     },
 
     corners = {
-        Enabled = true, 
+        Enabled = false, 
         Color = Color3.fromRGB(255, 255, 255),
     },
     cornersOutline = {
-        Enabled = true, 
+        Enabled = false, 
         Color = Color3.fromRGB(0, 0, 0),
     },
 }
@@ -182,8 +182,8 @@ function playerObject.new(player: Player)
     }, playerObject)
    
     for _, v in {"topLeft", "topRight", "bottomLeft", "bottomRight"} do
-        self.drawings.corners[v..'_vertical'], self.drawings.corners[v..'_horizontal'] = createDrawing('Line', { Thickness = 1, Visible = false }), createDrawing('Line', { Thickness = 1, Visible = false })
         self.drawings.cornersOutline[v..'_vertical'], self.drawings.cornersOutline[v..'_horizontal'] = createDrawing('Line', { Thickness = 2, Visible = false }), createDrawing('Line', { Thickness = 2, Visible = false })
+        self.drawings.corners[v..'_vertical'], self.drawings.corners[v..'_horizontal'] = createDrawing('Line', { Thickness = 1, Visible = false }), createDrawing('Line', { Thickness = 1, Visible = false })
     end 
 
     local function characterAdded(character: Model)
@@ -212,8 +212,8 @@ end
 
 function playerObject:HideDrawings()
     for _, drawing in self.drawings do
-        if #drawing ~= 0 then -- it isn't a drawing / is a table
-            for _,v in drawing do
+        if tostring(drawing) ~= "Drawing" then -- it isn't a drawing / is a table
+            for i,v in drawing do
                 v.Visible = false 
             end
         else
@@ -237,10 +237,8 @@ function playerObject:Render()
         return self:HideDrawings()
     end
 
-    for i, v in { self.drawings.corners, self.drawings.cornersOutline } do
-        print(i, v)
-        for corner, obj in v do 
-            print(corner, obj)
+    for i, v in { self.drawings.cornersOutline, self.drawings.corners } do
+        for corner, obj in v do
             local corner, direction = table.unpack(string.split(corner, '_'))
             local boxSize = corners.bottomRight - corners.topLeft
             
@@ -249,8 +247,8 @@ function playerObject:Render()
 
             local offset = direction == "vertical" and Vector2.new(0, boxSize.Y * 0.2 * vertMul) or Vector2.new(boxSize.X * 0.2 * horizMul, 0)
             
-            obj.Visible = i == 1 and module.config.corners.Enabled or module.config.cornersOutline.Enabled
-            obj.Color = i == 1 and module.config.corners.Color or module.config.cornersOutline.Color
+            obj.Visible = if i == 2 then module.config.corners.Enabled else module.config.cornersOutline.Enabled
+            obj.Color = if i == 2 then module.config.corners.Color else module.config.cornersOutline.Color
             obj.To = corners[corner] + offset
             obj.From = corners[corner]
         end 
@@ -355,7 +353,7 @@ function playerObject:Destroy()
     playerInstances[self.player.UserId] = nil
 end
 
-function module.Load(config) --playeradded, playerremoving, prerender
+function module.Load(config)
     if config then 
         for setting, properties in module.config do
             if not config[setting] then
