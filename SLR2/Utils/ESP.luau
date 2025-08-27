@@ -250,7 +250,7 @@ function playerObject:Render()
         local corner, direction = table.unpack(string.split(corner, '_'))
 
         local boxSize = corners.bottomRight - corners.topLeft
-        local cornerSize = direction == "vertical" and boxSize * Vector2.new(0.2, 0) or direction == "horizontal" and boxSize.Y * Vector2.new(0, 0.2)
+        local cornerSize = direction == "vertical" and boxSize * Vector2.new(0.2, 0) or direction == "horizontal" and boxSize * Vector2.new(0, 0.2)
 
         obj.Visible = cornerVisible
         obj.To = corners[corner] - cornerSize
