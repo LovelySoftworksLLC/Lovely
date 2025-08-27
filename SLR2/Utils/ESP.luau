@@ -182,7 +182,7 @@ function playerObject.new(player: Player)
     }, playerObject)
    
     for _, v in {"topLeft", "topRight", "bottomLeft", "bottomRight"} do
-        self.drawings.corners[v..'_vertical'], self.drawings.corners[v..'_horizontal'] = createDrawing('Line', { Thickness = 1, Visible = false, Color = Color3.fromRGB(255,0,0) }), createDrawing('Line', { Thickness = 1, Visible = false, Color=Color3.fromRGB(0,0,255) })
+        self.drawings.corners[v..'_vertical'], self.drawings.corners[v..'_horizontal'] = createDrawing('Line', { Thickness = 1, Visible = false }), createDrawing('Line', { Thickness = 1, Visible = false })
         self.drawings.cornersOutline[v..'_vertical'], self.drawings.cornersOutline[v..'_horizontal'] = createDrawing('Line', { Thickness = 2, Visible = false }), createDrawing('Line', { Thickness = 2, Visible = false })
     end 
 
@@ -251,21 +251,21 @@ function playerObject:Render()
         return
     end
 
-    for corner, obj in self.drawings.corners do
-        local corner, direction = table.unpack(string.split(corner, '_'))
-        local boxSize = corners.bottomRight - corners.topLeft
-        
-        local vertMul  = string.find(corner:lower(), "top") and 1 or (string.find(corner:lower(), "bottom") and -1)
-        local horizMul = string.find(corner:lower(), "left") and 1 or (string.find(corner:lower(), "right") and -1)
+    for i, v in { self.drawings.corners, self.drawings.cornersOutline } do
+        for corner, obj in v do 
+            local corner, direction = table.unpack(string.split(corner, '_'))
+            local boxSize = corners.bottomRight - corners.topLeft
+            
+            local vertMul  = string.find(corner:lower(), "top") and 1 or (string.find(corner:lower(), "bottom") and -1)
+            local horizMul = string.find(corner:lower(), "left") and 1 or (string.find(corner:lower(), "right") and -1)
 
-        local offset = direction == "vertical"
-            and Vector2.new(0, boxSize.Y * 0.2 * vertMul)
-            or Vector2.new(boxSize.X * 0.2 * horizMul, 0)
-        
-        obj.Visible = module.config.corners.Enabled 
-        obj.To = corners[corner] + offset
-        obj.From = corners[corner]
-        --obj.Color = module.config.corners.Color
+            local offset = direction == "vertical" and Vector2.new(0, boxSize.Y * 0.2 * vertMul) or Vector2.new(boxSize.X * 0.2 * horizMul, 0)
+            
+            obj.Visible = i == "corners" and module.config.corners.Enabled or module.config.cornersOutline.Enabled
+            obj.Color = i == "corners" and module.config.corners.Color or module.config.cornersOutline.Color
+            obj.To = corners[corner] + offset
+            obj.From = corners[corner]
+        end 
     end
 
     local box = self.drawings.box
