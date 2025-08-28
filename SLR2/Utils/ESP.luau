@@ -10,6 +10,7 @@ local function loadModule(file: string)
     return loadstring(module)()
 end
 
+local Heartbeat = loadModule('Utils/Heartbeat.luau').new();
 local Connector = loadModule('Utils/Connector.luau')
 
 local Players = game:GetService('Players')
@@ -387,15 +388,15 @@ function module.Load(config)
         playerInstances[player.UserId]:Destroy()
     end))
 
-    connections:Add('prerender', RunService.PreRender:Connect(function()
+    Heartbeat:Schedule(function()
         for _, v in playerInstances do
             if not v.character then
                 continue
             end
-
+    
             v:Render()
         end
-    end))
+    end, 1/60)
 end
 
 function module:ChangeSetting(setting, properties)
@@ -405,6 +406,7 @@ function module:ChangeSetting(setting, properties)
 end
 
 function module.Unload()
+    Heartbeat:Destroy()
     connections:Destroy()
 
     for _, v in playerInstances do
