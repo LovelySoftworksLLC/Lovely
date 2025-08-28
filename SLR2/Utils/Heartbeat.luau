@@ -6,7 +6,7 @@
 	Heartbeat.luau    | A Heartbeat Wrapper for LovelySoftworks
 	
 	LovelySoftworks  | 2025
-	Version          | v1.0.0
+	Version          | v1.2
 
 --]] 
 
@@ -17,7 +17,7 @@ local RunService = game:GetService('RunService');
 
 --// Types
 
-type Callback = (...any) -> (...any);
+type Callback = (deltaTime: number) -> any;
 
 type Task = {
 	Running: boolean,
@@ -25,7 +25,7 @@ type Task = {
 	
 	_fn: Callback,
 	_alive: boolean,
-	_interval: number,
+	_interval: number?,
 	_lastCalled: number,
 }
 
@@ -78,18 +78,24 @@ function Heartbeat.new()
 		local tasks = self._tasks;
 		local elapsed = self._elapsed;
 
-		for index, currentTask in tasks do
+		for i = #tasks, 1, -1 do
+			local currentTask = tasks[i];
+			
 			if not currentTask._alive then
-				table.remove(tasks, index);
+				tasks[i] = tasks[#tasks];
+				tasks[#tasks] = nil;
 				continue;
 			end
 			
-			if elapsed - currentTask._lastCalled < currentTask._interval then
+			local lastCalled = currentTask._lastCalled;
+			local interval = currentTask._interval;
+
+			if interval and elapsed - lastCalled < interval then
 				continue;
 			end
 			
 			currentTask._lastCalled = elapsed;
-			_execute(currentTask._fn);
+			_execute(currentTask._fn, deltaTime);
 		end
 		
 	end)
@@ -97,7 +103,7 @@ function Heartbeat.new()
 	return self;
 end
 
-function Heartbeat:Schedule(fn: Callback, interval: number)
+function Heartbeat:Schedule(fn: Callback, interval: number?)
 	if not self._running then
 		return;
 	end
@@ -108,7 +114,7 @@ function Heartbeat:Schedule(fn: Callback, interval: number)
 		_fn = fn,
 		_alive = true,
 		
-		_interval = interval or 0,
+		_interval = interval,
 		_lastCalled = -1,
 		
 		Running = true;
