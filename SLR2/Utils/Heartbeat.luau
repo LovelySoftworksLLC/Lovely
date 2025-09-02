@@ -6,7 +6,7 @@
 	Heartbeat.luau    | A Heartbeat Wrapper for LovelySoftworks
 	
 	LovelySoftworks  | 2025
-	Version          | v1.2
+	Version          | v1.3
 
 --]] 
 
@@ -20,13 +20,15 @@ local RunService = game:GetService('RunService');
 type Callback = (deltaTime: number) -> any;
 
 type Task = {
-	Running: boolean,
 	Cancel: (Task) -> (),
 	
 	_fn: Callback,
 	_alive: boolean,
 	_interval: number?,
 	_lastCalled: number,
+	
+	_next: Task?,
+	_prev: Task?,
 }
 
 --// Helpers
@@ -40,10 +42,14 @@ local function _handleCallback(fn: Callback, ...)
 	if not success then
 		warn(`[Heartbeat]: {err}`);
 	end
-	table.insert(FreeThreads, thread);
+	
+	if coroutine.status(thread) ~= 'dead' then
+		table.insert(FreeThreads, thread);
+	end
 end
 
 local function _yielder()
+	-- // keeps thread alive, allows reuse
 	while true do
 		_handleCallback(coroutine.yield());
 	end
@@ -66,36 +72,42 @@ Heartbeat.__index = Heartbeat;
 
 function Heartbeat.new()
 	local self = setmetatable({
-		_tasks = { } :: { Task },
 		_elapsed = 0;
 		_running = true,
 		_conn = nil :: RBXScriptConnection?,
+		
+		_next = nil,
+		_prev = nil,
 	}, Heartbeat)
 	
-	self.__conn = RunService.Heartbeat:Connect(function(deltaTime: number) 
+	self._conn = RunService.Heartbeat:Connect(function(deltaTime: number) 
 		self._elapsed += deltaTime;
 		
-		local tasks = self._tasks;
+		local currentTask = self._next;
 		local elapsed = self._elapsed;
 
-		for i = #tasks, 1, -1 do
-			local currentTask = tasks[i];
+		while currentTask do
+			local nextTask = currentTask._next;
 			
-			if not currentTask._alive then
-				tasks[i] = tasks[#tasks];
-				tasks[#tasks] = nil;
-				continue;
-			end
-			
-			local lastCalled = currentTask._lastCalled;
-			local interval = currentTask._interval;
+			if currentTask._alive then
+				local lastCalled = currentTask._lastCalled;
+				local interval = currentTask._interval;
 
-			if interval and elapsed - lastCalled < interval then
-				continue;
+				if elapsed - lastCalled >= interval then
+					currentTask._lastCalled = elapsed;
+					_execute(currentTask._fn, deltaTime);
+				end
+			else
+				if currentTask._prev then
+					currentTask._prev._next = currentTask._next;
+				end
+				
+				if currentTask._next then
+					currentTask._next._prev = currentTask._prev;
+				end
 			end
 			
-			currentTask._lastCalled = elapsed;
-			_execute(currentTask._fn, deltaTime);
+			currentTask = nextTask;
 		end
 		
 	end)
@@ -108,42 +120,63 @@ function Heartbeat:Schedule(fn: Callback, interval: number?)
 		return;
 	end
 	
-	local tasks = self._tasks;
-	
 	local taskObj = {
 		_fn = fn,
 		_alive = true,
 		
-		_interval = interval,
-		_lastCalled = -1,
+		_interval = interval or 0,
+		_lastCalled = self._elapsed,
 		
-		Running = true;
+		_next = self._next,
+		_prev = self,
 	};
 	
+	if self._next ~= nil then
+		self._next._prev = taskObj;
+	end
+	
+	self._next = taskObj;
+	
 	function taskObj:Cancel()
-		if not self.Running then
+		if not self._alive then
 			return;
 		end
-
-		self.Running = false;
+		
+		if taskObj._prev then
+			taskObj._prev._next = taskObj._next;
+		end
+		
+		if taskObj._next then
+			taskObj._next._prev = taskObj._prev;
+		end
+		
 		taskObj._alive = false;	
 	end	
-	
-	table.insert(tasks, taskObj);
 
 	return taskObj;
 end
 
 function Heartbeat:Destroy()
-	local tasks = self._tasks;
-	for index, runningTask in tasks do
-		runningTask:Cancel();
-		tasks[index] = nil;
+	if not self._running then
+		return;
+	end
+	
+	local currentTask = self._next;
+	while currentTask do
+		currentTask:Cancel();
+		currentTask = currentTask._next;
 	end
 	
 	if self._conn then
 		self._conn:Disconnect();
+		
+		(self :: any)._conn = nil;
 	end
+	
+	(self :: any)._next = nil;
+	(self :: any)._prev = nil;
+	
+	self._running = false;
 end
 
 return Heartbeat;
