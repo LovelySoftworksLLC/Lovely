@@ -1,3 +1,5 @@
+local cloneref = cloneref or function(instance) return instance end;
+
 local OWNER = 'LovelySoftworksLLC'
 local GAME = 'SLR2'
 
@@ -10,16 +12,16 @@ local function loadModule(file: string)
     return loadstring(module)()
 end
 
-local Heartbeat = loadModule('Utils/Heartbeat.luau').new();
 local Connector = loadModule('Utils/Connector.luau')
 
-local Players = game:GetService('Players')
-local RunService = game:GetService('RunService')
+local Players = cloneref(game:GetService('Players'));
 
-local localPlayer = Players.LocalPlayer
-local camera = workspace.CurrentCamera
+local localPlayer = cloneref(Players.LocalPlayer);
+local camera = cloneref(workspace.CurrentCamera);
 
+local Heartbeat = getgenv().Heartbeat;
 local connections = Connector.new()
+
 local playerInstances = {}
 
 local HEALTH_BAR_OFFSET = Vector2.new(6, 0);
@@ -37,6 +39,10 @@ local VERTICES = {
 	Vector3.new(1, 1, 1),
 	Vector3.new(1, -1, 1)
 };
+
+local compareinstances = compareinstances or function(a, b)
+	return a:GetDebugId() == b:GetDebugId();
+end
 
 local module = {}
 
@@ -372,7 +378,7 @@ function module.Load(config)
     end
 
     for _, player: Player in Players:GetPlayers() do
-        if player == localPlayer then
+        if compareinstances(player, localPlayer) then
             continue
         end
 
