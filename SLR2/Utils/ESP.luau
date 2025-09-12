@@ -411,6 +411,10 @@ function module:ChangeSetting(setting, properties)
     end
 end
 
+function module:GetSetting(setting, property)
+    return module.config[setting][property]
+end
+
 function module.Unload()
     Heartbeat:Destroy()
     connections:Destroy()
