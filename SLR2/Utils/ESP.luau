@@ -406,14 +406,44 @@ function module.Load(config)
 end
 
 function module:ChangeSetting(setting, properties)
-    for property, value in properties do
-        module.config[setting][property] = value
+    local realSetting
+    for k,_ in module.config do
+        if k:lower() == setting:lower() then
+            realSetting = k
+            break
+        end
+    end
+    if not realSetting then return end
+
+    for prop, val in properties do
+        for pk,_ in module.config[realSetting] do
+            if pk:lower() == prop:lower() then
+                module.config[realSetting][pk] = val
+                break
+            end
+        end
     end
 end
 
 function module:GetSetting(setting, property)
-    return module.config[setting][property]
+    local realSetting
+    for k,_ in module.config do
+        if k:lower() == setting:lower() then
+            realSetting = k
+            break
+        end
+    end
+    if not realSetting then return nil end
+
+    for pk,_ in module.config[realSetting] do
+        if pk:lower() == property:lower() then
+            return module.config[realSetting][pk]
+        end
+    end
+
+    return nil
 end
+
 
 function module.Unload()
     Heartbeat:Destroy()
