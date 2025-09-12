@@ -332,7 +332,7 @@ function playerObject:Render()
     if healthBar.Visible then
         healthBar.To = barTo;
 		healthBar.From = Vector2.zero.Lerp(barTo, barFrom, humanoid.Health/humanoid.MaxHealth);
-		healthBar.Color = Color3.new().Lerp(module.config.healthBar.DyingColor, module.config.healthBar.HealthyColor, humanoid.Health/humanoid.MaxHealth);
+		healthBar.Color = Color3.new().Lerp(module.config.healthBar.HealthyColor, module.config.healthBar.DyingColor, humanoid.Health/humanoid.MaxHealth);
     end
 
     local healthBarOutline = self.drawings.healthBarOutline
