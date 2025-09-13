@@ -112,6 +112,11 @@ module.config = {
     },
 }
 
+local settingMap = {}
+for k,_ in module.config do
+    settingMap[k:lower()] = k
+end
+
 local playerObject: { { player: Player } } = {}
 playerObject.__index = playerObject
 
@@ -271,8 +276,8 @@ function playerObject:Render()
         box.Color = module.config.box.Color
     end
 
-    local boxOutline = self.drawings.boxOutline and module.config.espType == 'box'
-    boxOutline.Visible = module.config.boxOutline.Enabled
+    local boxOutline = self.drawings.boxOutline
+    boxOutline.Visible = module.config.boxOutline.Enabled and module.config.espType == 'box'
     if boxOutline.Visible then
         boxOutline.Position = corners.topLeft
         boxOutline.Size = corners.bottomRight - corners.topLeft
@@ -408,13 +413,7 @@ function module.Load(config)
 end
 
 function module:ChangeSetting(setting, properties)
-    local realSetting
-    for k,_ in module.config do
-        if k:lower() == setting:lower() then
-            realSetting = k
-            break
-        end
-    end
+    local realSetting = settingMap[setting:lower()]
     if not realSetting then return end
 
     if type(module.config[realSetting]) ~= "table" then
@@ -433,14 +432,8 @@ function module:ChangeSetting(setting, properties)
 end
 
 function module:GetSetting(setting, property)
-    local realSetting
-    for k,_ in module.config do
-        if k:lower() == setting:lower() then
-            realSetting = k
-            break
-        end
-    end
-    if not realSetting then return nil end
+    local realSetting = settingMap[setting:lower()]
+    if not realSetting then return end
 
     local value = module.config[realSetting]
 
