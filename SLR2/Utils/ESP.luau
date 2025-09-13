@@ -47,6 +47,8 @@ end
 local module = {}
 
 module.config = {
+    espType = 'box',
+
     box = {
         Enabled = false,
         Color = Color3.fromRGB(100,0,0),
@@ -254,7 +256,7 @@ function playerObject:Render()
 
             local offset = direction == "vertical" and Vector2.new(0, boxSize.Y * 0.2 * vertMul) or Vector2.new(boxSize.X * 0.2 * horizMul, 0)
             
-            obj.Visible = if i == 2 then module.config.corners.Enabled else module.config.cornersOutline.Enabled
+            obj.Visible = (if i == 2 then module.config.corners.Enabled else module.config.cornersOutline.Enabled) and module.config.espType == 'corners'
             obj.Color = if i == 2 then module.config.corners.Color else module.config.cornersOutline.Color
             obj.To = corners[corner] + offset
             obj.From = corners[corner]
@@ -262,14 +264,14 @@ function playerObject:Render()
     end
 
     local box = self.drawings.box
-    box.Visible = module.config.box.Enabled
+    box.Visible = module.config.box.Enabled and module.config.espType == 'box'
     if box.Visible then
         box.Position = corners.topLeft
         box.Size = corners.bottomRight - corners.topLeft
         box.Color = module.config.box.Color
     end
 
-    local boxOutline = self.drawings.boxOutline
+    local boxOutline = self.drawings.boxOutline and module.config.espType == 'box'
     boxOutline.Visible = module.config.boxOutline.Enabled
     if boxOutline.Visible then
         boxOutline.Position = corners.topLeft
@@ -415,6 +417,11 @@ function module:ChangeSetting(setting, properties)
     end
     if not realSetting then return end
 
+    if type(module.config[realSetting]) ~= "table" then
+        module.config[realSetting] = properties
+        return
+    end
+
     for prop, val in properties do
         for pk,_ in module.config[realSetting] do
             if pk:lower() == prop:lower() then
@@ -435,15 +442,18 @@ function module:GetSetting(setting, property)
     end
     if not realSetting then return nil end
 
-    for pk,_ in module.config[realSetting] do
-        if pk:lower() == property:lower() then
-            return module.config[realSetting][pk]
-        end
+    local value = module.config[realSetting]
+
+    if type(value) ~= "table" then
+        return value
     end
 
-    return nil
+    for pk,_ in value do
+        if pk:lower() == property:lower() then
+            return value[pk]
+        end
+    end
 end
-
 
 function module.Unload()
     Heartbeat:Destroy()
