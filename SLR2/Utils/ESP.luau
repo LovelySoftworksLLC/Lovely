@@ -208,7 +208,7 @@ function playerObject.new(player: Player)
 
         self.character = character
 
-        self.connections:Add('died', character.Humanoid.Died:Once(function()
+        self.connections:Add('died', humanoid.Died:Once(function()
             self.character = nil
 
             self:HideDrawings()
