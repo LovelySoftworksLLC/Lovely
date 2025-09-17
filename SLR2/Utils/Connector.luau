@@ -22,7 +22,7 @@ function module:Remove(name: string | number, connectionIndex: number): boolean
 end
 
 function module:Reset()
-    for _, connection: RBXScriptConnection in ipairs(self._connections) do
+    for _, connection: RBXScriptConnection in self._connections do
         connection:Disconnect()
     end
     table.clear(self._connections)
