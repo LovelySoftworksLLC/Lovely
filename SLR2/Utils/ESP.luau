@@ -348,7 +348,7 @@ function playerObject:Render()
         healthBarOutline.To = barTo + HEALTH_BAR_OUTLINE_OFFSET;
 		healthBarOutline.From = barFrom - HEALTH_BAR_OUTLINE_OFFSET;
         healthBarOutline.Color = module.config.healthBarOutline.Color
-        healthBarOutline.Transparency = module.config.healthBarOutline.Transparency
+        healthBarOutline.Transparency = 1 - module.config.healthBarOutline.Transparency
     end
 end
 
