@@ -225,10 +225,9 @@ function playerObject.new(player: Player)
 end
 
 function playerObject:HideDrawings()
-    for i2, drawing in self.drawings do
-        print(i2)
-        if type(drawing) == 'table' then
-            for i,v in drawing do
+    for _, drawing in self.drawings do
+        if not isrenderobj(drawing) then
+            for _,v in drawing do
                 v.Visible = false 
             end
         else
@@ -355,7 +354,7 @@ end
 
 function playerObject:Destroy()
     for _, drawing in self.drawings do
-        if type(drawing) == 'table' or not isrenderobj(drawing) then -- it isn't a drawing / is a table
+        if not isrenderobj(drawing) then -- it isn't a drawing / is a table
             for _,v in drawing do
                 v:Remove()
             end
