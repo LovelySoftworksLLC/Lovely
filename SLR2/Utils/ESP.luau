@@ -51,7 +51,7 @@ module.config = {
 
     box = {
         Enabled = false,
-        Color = Color3.fromRGB(100,0,0),
+        Color = Color3.fromRGB(253, 158, 247),
     },
     boxOutline = {
         Enabled = false,
@@ -59,7 +59,7 @@ module.config = {
     },
     boxFill = {
         Enabled = false,
-        Color = Color3.fromRGB(255,0,0),
+        Color = Color3.fromRGB(253, 158, 247),
         Transparency = 0.85,
     },
     
