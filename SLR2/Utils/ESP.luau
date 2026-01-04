@@ -28,7 +28,6 @@ local HEALTH_BAR_OFFSET = Vector2.new(6, 0);
 local HEALTH_TEXT_OFFSET = Vector2.new(7, 0);
 local HEALTH_BAR_OUTLINE_OFFSET = Vector2.new(0, 1);
 local NAME_OFFSET = Vector2.new(0, 6);
-local GROUP_OFFSET = Vector2.new(0, 3);
 local DISTANCE_OFFSET = Vector2.new(0, 6);
 local VERTICES = {
 	Vector3.new(-1, -1, -1),
@@ -331,7 +330,7 @@ function playerObject:Render()
         local position = (corners.topLeft + corners.topRight) * 0.5 - Vector2.yAxis * name.TextBounds.Y - NAME_OFFSET
         
         if group.Visible then 
-            position -= (Vector2.new(0, group.Size) + GROUP_OFFSET)
+            position -= Vector2.new(0, group.Size)
         end 
 
         name.Position = position
