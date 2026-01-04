@@ -1,5 +1,5 @@
 local cloneref = cloneref or function(instance) return instance end;
-
+print("gurt")
 local OWNER = 'LovelySoftworksLLC'
 local GAME = 'SLR2'
 
@@ -304,21 +304,18 @@ function playerObject:Render()
     end
 
     local groupInfo = self.group 
-    if groupInfo then 
-        
-        local group = self.drawings.group
-        group.Visible = module.config.group.Enabled
-        if group.Visible then
-            group.Color = groupInfo.Color or module.config.group.Color
-            group.Transparency = 1 - module.config.group.Transparency
-            group.Font = module.config.group.Font
-            group.Size = module.config.group.Size
-            group.Outline = module.config.group.Outline
-            group.OutlineColor = module.config.group.OutlineColor
-            group.Text = groupInfo.Text
-            group.Position = (corners.topLeft + corners.topRight) * 0.5 - Vector2.yAxis * group.TextBounds.Y - NAME_OFFSET;
-        end
-    end 
+    local group = self.drawings.group
+    group.Visible = module.config.group.Enabled and groupInfo and true or false
+    if group.Visible then
+        group.Color = groupInfo.Color or module.config.group.Color
+        group.Transparency = 1 - module.config.group.Transparency
+        group.Font = module.config.group.Font
+        group.Size = module.config.group.Size
+        group.Outline = module.config.group.Outline
+        group.OutlineColor = module.config.group.OutlineColor
+        group.Text = groupInfo.Text
+        group.Position = (corners.topLeft + corners.topRight) * 0.5 - Vector2.yAxis * group.TextBounds.Y - NAME_OFFSET;
+    end
 
     local name = self.drawings.name
     name.Visible = module.config.name.Enabled
