@@ -79,7 +79,7 @@ module.config = {
         Transparency = 0,
         Outline = true,
         OutlineColor = Color3.fromRGB(0, 0, 0),
-        Size = 10,
+        Size = 9,
         Font = 3,
     },
     distance = {
