@@ -331,7 +331,7 @@ function playerObject:Render()
         local position = (corners.topLeft + corners.topRight) * 0.5 - Vector2.yAxis * name.TextBounds.Y - NAME_OFFSET
         
         if group.Visible then 
-            position -= (group.Size + GROUP_OFFSET)
+            position -= (Vector2.new(0, group.Size) + GROUP_OFFSET)
         end 
 
         name.Position = position
