@@ -305,7 +305,7 @@ function playerObject:Render()
 
     local groupInfo = self.group 
     local group = self.drawings.group
-    group.Visible = module.config.group.Enabled and groupInfo
+    group.Visible = module.config.group.Enabled and groupInfo ~= nil
     if group.Visible then
         group.Color = groupInfo.Color or module.config.group.Color
         group.Transparency = 1 - module.config.group.Transparency
