@@ -1,5 +1,5 @@
 local cloneref = cloneref or function(instance) return instance end;
-print("gurt")
+
 local OWNER = 'LovelySoftworksLLC'
 local GAME = 'SLR2'
 
@@ -196,6 +196,7 @@ function playerObject.new(player: Player)
 			healthBar = createDrawing('Line', { Thickness = 1, Visible = false }),
 			healthText = createDrawing('Text', { Center = true, Visible = false }),
 			name = createDrawing('Text', { Text = player.DisplayName, Center = true, Visible = false }),
+            group = createDrawing('Text', { Center = true, Visible = false }),
 			distance = createDrawing('Text', { Center = true, Visible = false }),
 
             corners = {},
@@ -305,7 +306,7 @@ function playerObject:Render()
 
     local groupInfo = self.group 
     local group = self.drawings.group
-    group.Visible = module.config.group.Enabled and groupInfo and true or false
+    group.Visible = module.config.group.Enabled and groupInfo
     if group.Visible then
         group.Color = groupInfo.Color or module.config.group.Color
         group.Transparency = 1 - module.config.group.Transparency
