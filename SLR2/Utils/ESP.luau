@@ -28,6 +28,7 @@ local HEALTH_BAR_OFFSET = Vector2.new(6, 0);
 local HEALTH_TEXT_OFFSET = Vector2.new(7, 0);
 local HEALTH_BAR_OUTLINE_OFFSET = Vector2.new(0, 1);
 local NAME_OFFSET = Vector2.new(0, 6);
+local GROUP_OFFSET = Vector2.new(0, 3);
 local DISTANCE_OFFSET = Vector2.new(0, 6);
 local VERTICES = {
 	Vector3.new(-1, -1, -1),
@@ -70,7 +71,16 @@ module.config = {
         Outline = true,
         OutlineColor = Color3.fromRGB(0, 0, 0),
         Size = 12,
-        Font = 1,
+        Font = 3,
+    },
+    group = {
+        Enabled = true,
+        Color = Color3.fromRGB(255,255,255),
+        Transparency = 0,
+        Outline = true,
+        OutlineColor = Color3.fromRGB(0, 0, 0),
+        Size = 10,
+        Font = 3,
     },
     distance = {
         Enabled = false,
@@ -79,7 +89,7 @@ module.config = {
         Outline = true,
         OutlineColor = Color3.fromRGB(0, 0, 0),
         Size = 9,
-        Font = 1,
+        Font = 3,
     },
 
     healthText = {
@@ -89,7 +99,7 @@ module.config = {
         Outline = true,
         OutlineColor = Color3.fromRGB(0, 0, 0),
         Size = 9,
-        Font = 1,
+        Font = 3,
     },
     healthBarOutline = {
         Enabled = false,
@@ -104,7 +114,7 @@ module.config = {
 
     corners = {
         Enabled = false, 
-        Color = Color3.fromRGB(255, 255, 255),
+        Color = Color3.fromRGB(253, 158, 247),
     },
     cornersOutline = {
         Enabled = false, 
@@ -293,6 +303,20 @@ function playerObject:Render()
         boxFill.Transparency = 1 - module.config.boxFill.Transparency
     end
 
+    local groupInfo = self.group 
+    local group = self.drawings.group
+    group.Visible = module.config.group.Enabled and groupInfo
+    if group.Visible then
+        group.Color = groupInfo.Color or module.config.group.Color
+        group.Transparency = 1 - module.config.group.Transparency
+        group.Font = module.config.group.Font
+        group.Size = module.config.group.Size
+        group.Outline = module.config.group.Outline
+        group.OutlineColor = module.config.group.OutlineColor
+        group.Text = groupInfo.Text
+        group.Position = (corners.topLeft + corners.topRight) * 0.5 - Vector2.yAxis * group.TextBounds.Y - NAME_OFFSET;
+    end
+
     local name = self.drawings.name
     name.Visible = module.config.name.Enabled
     if name.Visible then
@@ -302,7 +326,14 @@ function playerObject:Render()
         name.Size = module.config.name.Size
         name.Outline = module.config.name.Outline
         name.OutlineColor = module.config.name.OutlineColor
-        name.Position = (corners.topLeft + corners.topRight) * 0.5 - Vector2.yAxis * name.TextBounds.Y - NAME_OFFSET;
+
+        local position = (corners.topLeft + corners.topRight) * 0.5 - Vector2.yAxis * name.TextBounds.Y - NAME_OFFSET
+        
+        if group.Visible then 
+            position -= (group.Size + GROUP_OFFSET)
+        end 
+
+        name.Position = position
     end
 
     local distance = self.drawings.distance
@@ -367,6 +398,45 @@ function playerObject:Destroy()
     playerInstances[self.player.UserId] = nil
 end
 
+local instanceObject: { { config: {} } } = {}
+instanceObject.__index = playerObject
+
+function instanceObject.new(config)
+    local self = setmetatable({
+        config = config,
+        instances = {},
+        connections = Connector.new(),
+    }, instanceObject)
+end
+
+function instanceObject:Add(instance: Instance)
+    if self.instances[instance] then
+        return -- already exists
+    end
+
+    self.instances[instance] = {
+
+    }
+end
+
+function instanceObject:Remove(instance: Instance)
+    if not self.instances[instance] then
+        return 
+    end
+    
+end
+
+function instanceObject:Destroy()
+    for _, drawings in self.instances do
+        for _, v in drawings do
+            v:Remove()
+        end 
+    end
+
+    self.connections:Destroy()
+    playerInstances[self.player.UserId] = nil
+end
+
 function module.Load(config)
     if config then 
         for setting, properties in module.config do
@@ -410,6 +480,12 @@ function module.Load(config)
             v:Render()
         end
     end, 1/60)
+
+    Heartbeat:Schedule(function()
+        for _, v in playerInstances do
+            v.group = module.GetGroup(v.player)
+        end
+    end, 1)
 end
 
 function module:ChangeSetting(setting, properties)
