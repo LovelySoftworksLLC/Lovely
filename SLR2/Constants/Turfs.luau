@@ -1,4 +1,4 @@
-{
+return {
     {
         abbreviation = "YGG",
         groupId = 32522100,
