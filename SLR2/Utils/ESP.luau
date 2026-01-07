@@ -73,7 +73,7 @@ module.config = {
         Font = 3,
     },
     group = {
-        Enabled = true,
+        Enabled = false,
         Color = Color3.fromRGB(255,255,255),
         Transparency = 0,
         Outline = true,
@@ -206,9 +206,11 @@ function playerObject.new(player: Player)
     }, playerObject)
    
     for _, v in {"topLeft", "topRight", "bottomLeft", "bottomRight"} do
-        self.drawings.cornersOutline[v..'_vertical'], self.drawings.cornersOutline[v..'_horizontal'] = createDrawing('Line', { Thickness = 2, Visible = false }), createDrawing('Line', { Thickness = 2, Visible = false })
+        self.drawings.cornersOutline[v..'_vertical'], self.drawings.cornersOutline[v..'_horizontal'] = createDrawing('Line', { Thickness = 2, Visible = false }), createDrawing('Line', { Thickness = 2, Visible = false, ZIndex = 1, })
         self.drawings.corners[v..'_vertical'], self.drawings.corners[v..'_horizontal'] = createDrawing('Line', { Thickness = 1, Visible = false }), createDrawing('Line', { Thickness = 1, Visible = false, ZIndex = 2, })
     end 
+
+    self:Update()
 
     local function characterAdded(character: Model)
         local humanoid = character and character:WaitForChild('Humanoid', 10)
@@ -246,6 +248,79 @@ function playerObject:HideDrawings()
     end
 end
 
+function playerObject:Update(setting: string?, property)
+    if setting then 
+        if setting == "corners" or setting == "cornersOutline" then 
+            for i, v in { self.drawings.cornersOutline, self.drawings.corners } do
+                for corner, obj in v do
+                    obj.Color = if i == 2 then module.config.corners.Color else module.config.cornersOutline.Color
+                end 
+            end
+        end 
+
+
+    else
+        local humanoid = self.character:FindFirstChild('Humanoid')
+        local head = self.character and self.character:FindFirstChild("Head")
+
+        if not humanoid or not head then
+            return
+        end
+
+        for i, v in { self.drawings.cornersOutline, self.drawings.corners } do
+            for corner, obj in v do
+                obj.Color = if i == 2 then module.config.corners.Color else module.config.cornersOutline.Color
+            end 
+        end
+    
+        local box = self.drawings.box
+        box.Color = module.config.box.Color
+    
+        local boxOutline = self.drawings.boxOutline
+        boxOutline.Color = module.config.boxOutline.Color
+    
+        local boxFill = self.drawings.boxFill
+        boxFill.Color = module.config.boxFill.Color
+        boxFill.Transparency = 1 - module.config.boxFill.Transparency
+    
+        local groupInfo = self.group 
+        local group = self.drawings.group
+        group.Transparency = 1 - module.config.group.Transparency
+        group.Size = module.config.group.Size
+        group.Font = module.config.group.Font
+        group.Outline = module.config.group.Outline
+        group.OutlineColor = module.config.group.OutlineColor
+    
+        local name = self.drawings.name
+        name.Color = module.config.name.Color
+        name.Transparency = 1 - module.config.name.Transparency
+        name.Font = module.config.name.Font
+        name.Size = module.config.name.Size
+        name.Outline = module.config.name.Outline
+        name.OutlineColor = module.config.name.OutlineColor
+    
+        local distance = self.drawings.distance
+        distance.Color = module.config.distance.Color
+        distance.Transparency = 1 - module.config.distance.Transparency
+        distance.Font = module.config.distance.Font
+        distance.Size = module.config.distance.Size
+        distance.Outline = module.config.distance.Outline
+        distance.OutlineColor = module.config.distance.OutlineColor
+    
+        local healthText = self.drawings.healthText
+        healthText.Color = module.config.healthText.Color
+        healthText.Transparency = 1 - module.config.healthText.Transparency
+        healthText.Font = module.config.healthText.Font
+        healthText.Size = module.config.healthText.Size
+        healthText.Outline = module.config.healthText.Outline
+        healthText.OutlineColor = module.config.healthText.OutlineColor
+    
+        local healthBarOutline = self.drawings.healthBarOutline
+        healthBarOutline.Color = module.config.healthBarOutline.Color
+        healthBarOutline.Transparency = 1 - module.config.healthBarOutline.Transparency
+    end 
+end
+
 function playerObject:Render()
     local humanoid = self.character:FindFirstChild('Humanoid')
     local head = self.character and self.character:FindFirstChild("Head")
@@ -261,21 +336,22 @@ function playerObject:Render()
         return self:HideDrawings()
     end
 
-    for i, v in { self.drawings.cornersOutline, self.drawings.corners } do
-        for corner, obj in v do
-            local corner, direction = table.unpack(string.split(corner, '_'))
-            local boxSize = corners.bottomRight - corners.topLeft
-            
-            local vertMul  = string.find(corner:lower(), "top") and 1 or -1
-            local horizMul = string.find(corner:lower(), "left") and 1 or -1
+    if module.config.corners.Enabled then 
+        for i, v in { self.drawings.cornersOutline, self.drawings.corners } do
+            for corner, obj in v do
+                local corner, direction = table.unpack(string.split(corner, '_'))
+                local boxSize = corners.bottomRight - corners.topLeft
+                
+                local vertMul  = string.find(corner:lower(), "top") and 1 or -1
+                local horizMul = string.find(corner:lower(), "left") and 1 or -1
 
-            local offset = direction == "vertical" and Vector2.new(0, boxSize.Y * 0.2 * vertMul) or Vector2.new(boxSize.X * 0.2 * horizMul, 0)
-            
-            obj.Visible = (if i == 2 then module.config.corners.Enabled else module.config.cornersOutline.Enabled) and module.config.espType == 'corners'
-            obj.Color = if i == 2 then module.config.corners.Color else module.config.cornersOutline.Color
-            obj.To = corners[corner] + offset
-            obj.From = corners[corner]
-        end 
+                local offset = direction == "vertical" and Vector2.new(0, boxSize.Y * 0.2 * vertMul) or Vector2.new(boxSize.X * 0.2 * horizMul, 0)
+                
+                obj.Visible = (if i == 2 then module.config.corners.Enabled else module.config.cornersOutline.Enabled) and module.config.espType == 'corners'
+                obj.To = corners[corner] + offset
+                obj.From = corners[corner]
+            end 
+        end
     end
 
     local box = self.drawings.box
@@ -283,7 +359,6 @@ function playerObject:Render()
     if box.Visible then
         box.Position = corners.topLeft
         box.Size = corners.bottomRight - corners.topLeft
-        box.Color = module.config.box.Color
     end
 
     local boxOutline = self.drawings.boxOutline
@@ -291,7 +366,6 @@ function playerObject:Render()
     if boxOutline.Visible then
         boxOutline.Position = corners.topLeft
         boxOutline.Size = corners.bottomRight - corners.topLeft
-        boxOutline.Color = module.config.boxOutline.Color
     end
 
     local boxFill = self.drawings.boxFill
@@ -299,34 +373,18 @@ function playerObject:Render()
     if boxFill.Visible then
         boxFill.Position = corners.topLeft
         boxFill.Size = corners.bottomRight - corners.topLeft
-        boxFill.Color = module.config.boxFill.Color
-        boxFill.Transparency = 1 - module.config.boxFill.Transparency
     end
 
     local groupInfo = self.group 
     local group = self.drawings.group
-    group.Visible = module.config.group.Enabled and groupInfo ~= nil
+    group.Visible = module.config.group.Enabled and groupInfo
     if group.Visible then
-        group.Color = groupInfo.Color or module.config.group.Color
-        group.Transparency = 1 - module.config.group.Transparency
-        group.Font = module.config.group.Font
-        group.Size = module.config.group.Size
-        group.Outline = module.config.group.Outline
-        group.OutlineColor = module.config.group.OutlineColor
-        group.Text = groupInfo.Text
         group.Position = (corners.topLeft + corners.topRight) * 0.5 - Vector2.yAxis * group.TextBounds.Y - NAME_OFFSET;
     end
 
     local name = self.drawings.name
     name.Visible = module.config.name.Enabled
     if name.Visible then
-        name.Color = module.config.name.Color
-        name.Transparency = 1 - module.config.name.Transparency
-        name.Font = module.config.name.Font
-        name.Size = module.config.name.Size
-        name.Outline = module.config.name.Outline
-        name.OutlineColor = module.config.name.OutlineColor
-
         local position = (corners.topLeft + corners.topRight) * 0.5 - Vector2.yAxis * name.TextBounds.Y - NAME_OFFSET
         
         if group.Visible then 
@@ -339,13 +397,7 @@ function playerObject:Render()
     local distance = self.drawings.distance
     distance.Visible = module.config.distance.Enabled
     if distance.Visible then
-        distance.Color = module.config.distance.Color
-        distance.Transparency = 1 - module.config.distance.Transparency
-        distance.Font = module.config.distance.Font
         distance.Text = `{math.round(depth)} studs`
-        distance.Size = module.config.distance.Size
-        distance.Outline = module.config.distance.Outline
-        distance.OutlineColor = module.config.distance.OutlineColor
         distance.Position = (corners.bottomLeft + corners.bottomRight) * 0.5 + DISTANCE_OFFSET;
     end
 
@@ -355,13 +407,7 @@ function playerObject:Render()
     local healthText = self.drawings.healthText
     healthText.Visible = module.config.healthText.Enabled
     if healthText.Visible then
-        healthText.Color = module.config.healthText.Color
-        healthText.Transparency = 1 - module.config.healthText.Transparency
-        healthText.Font = module.config.healthText.Font
         healthText.Text = `{math.round(humanoid.Health)} hp`
-        healthText.Size = module.config.healthText.Size
-        healthText.Outline = module.config.healthText.Outline
-        healthText.OutlineColor = module.config.healthText.OutlineColor
 		healthText.Position = Vector2.zero.Lerp(barTo, barFrom, humanoid.Health/humanoid.MaxHealth) - healthText.TextBounds*0.5 - HEALTH_TEXT_OFFSET;
     end
 
@@ -378,8 +424,6 @@ function playerObject:Render()
     if healthBarOutline.Visible then
         healthBarOutline.To = barTo + HEALTH_BAR_OUTLINE_OFFSET;
 		healthBarOutline.From = barFrom - HEALTH_BAR_OUTLINE_OFFSET;
-        healthBarOutline.Color = module.config.healthBarOutline.Color
-        healthBarOutline.Transparency = 1 - module.config.healthBarOutline.Transparency
     end
 end
 
@@ -483,7 +527,13 @@ function module.Load(config)
 
     Heartbeat:Schedule(function()
         for _, v in playerInstances do
-            v.group = module.GetGroup(v.player)
+            local groupInfo = module.GetGroup(v.player)
+            v.group = groupInfo
+
+            if groupInfo then
+               v.drawings.group.Text = groupInfo.Text
+               v.drawings.group.Color = groupInfo.Color 
+            end
         end
     end, 1)
 end
@@ -492,18 +542,21 @@ function module:ChangeSetting(setting, properties)
     local realSetting = settingMap[setting:lower()]
     if not realSetting then return end
 
-    if type(module.config[realSetting]) ~= "table" then
-        module.config[realSetting] = properties
-        return
-    end
-
-    for prop, val in properties do
-        for pk,_ in module.config[realSetting] do
-            if pk:lower() == prop:lower() then
-                module.config[realSetting][pk] = val
-                break
+    if type(module.config[realSetting]) == "table" then
+        for prop, val in properties do
+            for pk,_ in module.config[realSetting] do
+                if pk:lower() == prop:lower() then
+                    module.config[realSetting][pk] = val
+                    break
+                end
             end
         end
+    else
+        module.config[realSetting] = properties
+    end
+
+    for _, v in playerInstances do
+        v:Update()
     end
 end
 
