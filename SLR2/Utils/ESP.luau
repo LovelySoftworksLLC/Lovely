@@ -210,8 +210,6 @@ function playerObject.new(player: Player)
         self.drawings.corners[v..'_vertical'], self.drawings.corners[v..'_horizontal'] = createDrawing('Line', { Thickness = 1, Visible = false }), createDrawing('Line', { Thickness = 1, Visible = false, ZIndex = 2, })
     end 
 
-    self:Update()
-
     local function characterAdded(character: Model)
         local humanoid = character and character:WaitForChild('Humanoid', 10)
         if not player:IsDescendantOf(Players) or not humanoid or humanoid.Health <= 0 then
@@ -219,6 +217,7 @@ function playerObject.new(player: Player)
         end
 
         self.character = character
+        self:Update()
 
         self.connections:Add('died', humanoid.Died:Once(function()
             self.character = nil
@@ -248,82 +247,70 @@ function playerObject:HideDrawings()
     end
 end
 
-function playerObject:Update(setting: string?, property)
-    if setting then 
-        if setting == "corners" or setting == "cornersOutline" then 
-            for i, v in { self.drawings.cornersOutline, self.drawings.corners } do
-                for corner, obj in v do
-                    obj.Color = if i == 2 then module.config.corners.Color else module.config.cornersOutline.Color
-                end 
-            end
+function playerObject:Update()
+    local humanoid = self.character and self.character:FindFirstChild('Humanoid')
+    local head = humanoid and self.character:FindFirstChild("Head")
+
+    if not humanoid or not head then
+        return
+    end
+
+    for i, v in { self.drawings.cornersOutline, self.drawings.corners } do
+        for corner, obj in v do
+            obj.Color = if i == 2 then module.config.corners.Color else module.config.cornersOutline.Color
         end 
+    end
 
+    local box = self.drawings.box
+    box.Color = module.config.box.Color
 
-    else
-        local humanoid = self.character:FindFirstChild('Humanoid')
-        local head = self.character and self.character:FindFirstChild("Head")
+    local boxOutline = self.drawings.boxOutline
+    boxOutline.Color = module.config.boxOutline.Color
 
-        if not humanoid or not head then
-            return
-        end
+    local boxFill = self.drawings.boxFill
+    boxFill.Color = module.config.boxFill.Color
+    boxFill.Transparency = 1 - module.config.boxFill.Transparency
 
-        for i, v in { self.drawings.cornersOutline, self.drawings.corners } do
-            for corner, obj in v do
-                obj.Color = if i == 2 then module.config.corners.Color else module.config.cornersOutline.Color
-            end 
-        end
-    
-        local box = self.drawings.box
-        box.Color = module.config.box.Color
-    
-        local boxOutline = self.drawings.boxOutline
-        boxOutline.Color = module.config.boxOutline.Color
-    
-        local boxFill = self.drawings.boxFill
-        boxFill.Color = module.config.boxFill.Color
-        boxFill.Transparency = 1 - module.config.boxFill.Transparency
-    
-        local groupInfo = self.group 
-        local group = self.drawings.group
-        group.Transparency = 1 - module.config.group.Transparency
-        group.Size = module.config.group.Size
-        group.Font = module.config.group.Font
-        group.Outline = module.config.group.Outline
-        group.OutlineColor = module.config.group.OutlineColor
-    
-        local name = self.drawings.name
-        name.Color = module.config.name.Color
-        name.Transparency = 1 - module.config.name.Transparency
-        name.Font = module.config.name.Font
-        name.Size = module.config.name.Size
-        name.Outline = module.config.name.Outline
-        name.OutlineColor = module.config.name.OutlineColor
-    
-        local distance = self.drawings.distance
-        distance.Color = module.config.distance.Color
-        distance.Transparency = 1 - module.config.distance.Transparency
-        distance.Font = module.config.distance.Font
-        distance.Size = module.config.distance.Size
-        distance.Outline = module.config.distance.Outline
-        distance.OutlineColor = module.config.distance.OutlineColor
-    
-        local healthText = self.drawings.healthText
-        healthText.Color = module.config.healthText.Color
-        healthText.Transparency = 1 - module.config.healthText.Transparency
-        healthText.Font = module.config.healthText.Font
-        healthText.Size = module.config.healthText.Size
-        healthText.Outline = module.config.healthText.Outline
-        healthText.OutlineColor = module.config.healthText.OutlineColor
-    
-        local healthBarOutline = self.drawings.healthBarOutline
-        healthBarOutline.Color = module.config.healthBarOutline.Color
-        healthBarOutline.Transparency = 1 - module.config.healthBarOutline.Transparency
-    end 
+    local groupInfo = self.group 
+    local group = self.drawings.group
+    group.Transparency = 1 - module.config.group.Transparency
+    group.Size = module.config.group.Size
+    group.Font = module.config.group.Font
+    group.Outline = module.config.group.Outline
+    group.OutlineColor = module.config.group.OutlineColor
+
+    local name = self.drawings.name
+    name.Color = module.config.name.Color
+    name.Transparency = 1 - module.config.name.Transparency
+    name.Font = module.config.name.Font
+    name.Size = module.config.name.Size
+    name.Outline = module.config.name.Outline
+    name.OutlineColor = module.config.name.OutlineColor
+
+    local distance = self.drawings.distance
+    distance.Color = module.config.distance.Color
+    distance.Transparency = 1 - module.config.distance.Transparency
+    distance.Font = module.config.distance.Font
+    distance.Size = module.config.distance.Size
+    distance.Outline = module.config.distance.Outline
+    distance.OutlineColor = module.config.distance.OutlineColor
+
+    local healthText = self.drawings.healthText
+    healthText.Color = module.config.healthText.Color
+    healthText.Transparency = 1 - module.config.healthText.Transparency
+    healthText.Font = module.config.healthText.Font
+    healthText.Size = module.config.healthText.Size
+    healthText.Outline = module.config.healthText.Outline
+    healthText.OutlineColor = module.config.healthText.OutlineColor
+
+    local healthBarOutline = self.drawings.healthBarOutline
+    healthBarOutline.Color = module.config.healthBarOutline.Color
+    healthBarOutline.Transparency = 1 - module.config.healthBarOutline.Transparency
 end
 
 function playerObject:Render()
-    local humanoid = self.character:FindFirstChild('Humanoid')
-    local head = self.character and self.character:FindFirstChild("Head")
+    local humanoid = self.character and self.character:FindFirstChild('Humanoid')
+    local head = humanoid and self.character:FindFirstChild("Head")
 
     if not humanoid or not head then
         return self:HideDrawings()
