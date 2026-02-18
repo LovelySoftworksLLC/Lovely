@@ -364,7 +364,7 @@ function playerObject:Render()
 
     local groupInfo = self.group 
     local group = self.drawings.group
-    group.Visible = module.config.group.Enabled and groupInfo
+    group.Visible = module.config.group.Enabled and groupInfo ~= nil
     if group.Visible then
         group.Position = (corners.topLeft + corners.topRight) * 0.5 - Vector2.yAxis * group.TextBounds.Y - NAME_OFFSET;
     end
