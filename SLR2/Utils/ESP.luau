@@ -323,22 +323,26 @@ function playerObject:Render()
         return self:HideDrawings()
     end
 
-    if module.config.corners.Enabled then 
-        for i, v in { self.drawings.cornersOutline, self.drawings.corners } do
-            for corner, obj in v do
-                local corner, direction = table.unpack(string.split(corner, '_'))
-                local boxSize = corners.bottomRight - corners.topLeft
-                
-                local vertMul  = string.find(corner:lower(), "top") and 1 or -1
-                local horizMul = string.find(corner:lower(), "left") and 1 or -1
+    for i, v in { self.drawings.cornersOutline, self.drawings.corners } do
+        local visible = (if i == 2 then module.config.corners.Enabled else module.config.cornersOutline.Enabled) and module.config.espType == 'corners'
 
-                local offset = direction == "vertical" and Vector2.new(0, boxSize.Y * 0.2 * vertMul) or Vector2.new(boxSize.X * 0.2 * horizMul, 0)
-                
-                obj.Visible = (if i == 2 then module.config.corners.Enabled else module.config.cornersOutline.Enabled) and module.config.espType == 'corners'
-                obj.To = corners[corner] + offset
-                obj.From = corners[corner]
-            end 
-        end
+        for corner, obj in v do
+            obj.Visible = visible 
+            if not visible then
+                continue 
+            end
+
+            local corner, direction = table.unpack(string.split(corner, '_'))
+            local boxSize = corners.bottomRight - corners.topLeft
+            
+            local vertMul  = string.find(corner:lower(), "top") and 1 or -1
+            local horizMul = string.find(corner:lower(), "left") and 1 or -1
+
+            local offset = direction == "vertical" and Vector2.new(0, boxSize.Y * 0.2 * vertMul) or Vector2.new(boxSize.X * 0.2 * horizMul, 0)
+        
+            obj.To = corners[corner] + offset
+            obj.From = corners[corner]
+        end 
     end
 
     local box = self.drawings.box
