@@ -192,7 +192,7 @@ function playerObject.new(player: Player)
             boxOutline = createDrawing('Square', { Thickness = 2, Visible = false }),
             box = createDrawing('Square', { Thickness = 1, Visible = false, ZIndex = 2, }),
             healthBarOutline = createDrawing('Line', { Thickness = 3, Visible = false }),
-			healthBar = createDrawing('Line', { Thickness = 1, Visible = false }),
+			healthBar = createDrawing('Line', { Thickness = 1, Visible = false, ZIndex = 2, }),
 			healthText = createDrawing('Text', { Center = true, Visible = false }),
 			name = createDrawing('Text', { Text = player.DisplayName, Center = true, Visible = false }),
             group = createDrawing('Text', { Center = true, Visible = false }),
@@ -206,7 +206,7 @@ function playerObject.new(player: Player)
     }, playerObject)
    
     for _, v in {"topLeft", "topRight", "bottomLeft", "bottomRight"} do
-        self.drawings.cornersOutline[v..'_vertical'], self.drawings.cornersOutline[v..'_horizontal'] = createDrawing('Line', { Thickness = 2, Visible = false }), createDrawing('Line', { Thickness = 2, Visible = false, ZIndex = 1, })
+        self.drawings.cornersOutline[v..'_vertical'], self.drawings.cornersOutline[v..'_horizontal'] = createDrawing('Line', { Thickness = 2, Visible = false }), createDrawing('Line', { Thickness = 2, Visible = false, })
         self.drawings.corners[v..'_vertical'], self.drawings.corners[v..'_horizontal'] = createDrawing('Line', { Thickness = 1, Visible = false }), createDrawing('Line', { Thickness = 1, Visible = false, ZIndex = 2, })
     end 
 
