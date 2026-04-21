@@ -21,6 +21,10 @@ function module:Remove(name: string | number, connectionIndex: number): boolean
     return false
 end
 
+function module:Exists(name: string | number): boolean
+    return self._connections[name] ~= nil
+end
+
 function module:Reset()
     for _, connection: RBXScriptConnection in self._connections do
         connection:Disconnect()
