@@ -37,7 +37,7 @@ end
 
 function module:Reset()
     for _, data: RBXScriptConnection in self._connections do
-        data:Disconnect()
+        data.connection:Disconnect()
 
         if data.callback then
             data.callback()
